@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Window : MonoBehaviour
 {
-    protected Bounds _screenBounds;
+    protected ScreenInfo _screenInfo;
     protected RectTransform _transform;
 
     private void Awake()
@@ -10,8 +10,13 @@ public class Window : MonoBehaviour
         _transform = GetComponent<RectTransform>();
     }
 
-    public virtual void Init(Bounds screenBounds)
+    public virtual void Init()
     {
-        _screenBounds = screenBounds;
+        _screenInfo = Screen.ScreenInfo;
+    }
+
+    public virtual void CloseWindow() 
+    {
+        Destroy(gameObject);
     }
 }

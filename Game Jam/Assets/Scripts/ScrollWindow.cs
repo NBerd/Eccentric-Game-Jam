@@ -9,23 +9,29 @@ public class ScrollWindow : Window
 
     private float _timer = 0;
 
-    public override void Init(Bounds screenBounds)
+    public override void Init()
     {
-        base.Init(screenBounds);
+        base.Init();
 
         SetStartPosition();
     }
 
     private void SetStartPosition() 
     {
-        float positionX = Random.Range(_screenBounds.min.x + _transform.sizeDelta.x / 2, _screenBounds.max.x - _transform.sizeDelta.x / 2);
-        float positionY = _screenBounds.max.y + _transform.sizeDelta.y / 2;
+        float deltaX = _transform.sizeDelta.x * _screenInfo.Scale / 2;
+        float deltaY = _transform.sizeDelta.y * _screenInfo.Scale / 2;
+
+        float minX = _screenInfo.Bounds.min.x + deltaX;
+        float maxX = _screenInfo.Bounds.max.x - deltaX;
+
+        float positionX = Random.Range(minX, maxX);
+        float positionY = _screenInfo.Bounds.max.y + deltaY;
 
         transform.position = new Vector2(positionX, positionY);
 
         _startPosition = transform.position;
         _targetPosition = _startPosition;
-        _targetPosition.y = _screenBounds.min.y - (_transform.sizeDelta.y / 2);
+        _targetPosition.y = _screenInfo.Bounds.min.y - deltaY;
     }
 
     private void Update()
@@ -35,6 +41,6 @@ public class ScrollWindow : Window
         transform.position = Vector2.Lerp(_startPosition, _targetPosition, _timer / _travelTime);
 
         if (transform.position.y == _targetPosition.y)
-            Destroy(gameObject);
+            CloseWindow();
     }
 }

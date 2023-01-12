@@ -14,10 +14,8 @@ public class WritterWindow : MonoBehaviour
     {
         string[] words = _library.Words;
 
-        string word = words[Random.Range(0, words.Length)];
-
-        _currentWord = word.ToUpper();
-        _text.text = word;
+        _currentWord = words[Random.Range(0, words.Length)].ToUpper();
+        _text.text = _currentWord;
     }
 
     private void OnEnable()
@@ -55,7 +53,7 @@ public class WritterWindow : MonoBehaviour
 
     private void UpdateProggres() 
     {
-        string newText = $"<color={_succesColor}>" + _currentWord.ToLower().Insert(_currentCharId, $"</color>");
+        string newText = $"<color={_succesColor}>" + _currentWord.Insert(_currentCharId, $"</color>");
 
         _text.text = newText;
     }

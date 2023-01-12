@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class TextField : MonoBehaviour
@@ -11,11 +10,10 @@ public class TextField : MonoBehaviour
     [TextArea(10, 25)]
     [SerializeField] private string _text;
     [SerializeField] private TextMeshProUGUI _textField;
-    [SerializeField] private ScrollRect _scrollView;
     [SerializeField] private int _charPerClick;
 
     private int _currentIndex;
-    public string _currentText;
+    private string _currentText;
 
     private void Start()
     {
@@ -41,6 +39,9 @@ public class TextField : MonoBehaviour
 
         _currentText = _text.Substring(0, _currentIndex);
 
+        if (_currentIndex == _text.Length) 
+            Debug.Log("Win!");
+
         UpdateCursor();
     }
 
@@ -56,12 +57,5 @@ public class TextField : MonoBehaviour
     private void UpdateText() 
     {
         _textField.text = _currentText;
-
-        UpdateScrollView();
-    }
-
-    private void UpdateScrollView()
-    {
-        _scrollView.verticalNormalizedPosition = 0;
     }
 }
