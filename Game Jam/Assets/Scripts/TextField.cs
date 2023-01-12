@@ -4,6 +4,7 @@ using TMPro;
 
 public class TextField : MonoBehaviour
 {
+    private const char CURSOR_CHAR_0 = ' ';
     private const char CURSOR_CHAR = '|';
     private const float CURSOR_UPDATE_TIME = .5f;
 
@@ -14,7 +15,7 @@ public class TextField : MonoBehaviour
     [SerializeField] private int _charPerClick;
 
     private int _currentIndex;
-    private string _currentText;
+    public string _currentText;
 
     private void Start()
     {
@@ -43,14 +44,11 @@ public class TextField : MonoBehaviour
         UpdateCursor();
     }
 
-    private void UpdateCursor() 
+    private void UpdateCursor()
     {
-        if (_currentText.Length > 0) 
-        {
-            char lastChar = _currentText[^1];
+        char lastChar = _currentText[^1];
 
-            _currentText = lastChar == CURSOR_CHAR ? _currentText[0..^1] : _currentText += CURSOR_CHAR;
-        }
+        _currentText = lastChar == CURSOR_CHAR ? _currentText[0..^1] + CURSOR_CHAR_0 : _currentText[0..^1] + CURSOR_CHAR;
 
         UpdateText();
     }

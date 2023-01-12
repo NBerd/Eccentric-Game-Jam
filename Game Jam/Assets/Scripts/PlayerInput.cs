@@ -7,12 +7,10 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
-        string inputText = Input.inputString;
+        string inputText = Input.inputString.ToUpper();
 
         if (Input.anyKeyDown && !string.IsNullOrEmpty(inputText)) 
         {
-            Debug.Log(inputText);
-
             OnType?.Invoke(inputText);
         }
     }

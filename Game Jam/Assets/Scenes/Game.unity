@@ -170,7 +170,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 469263115}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
   m_Name: 
@@ -383,10 +383,10 @@ MonoBehaviour:
     and it's always nice to\r\n\t * avoid busy looping.\r\n\t */\r\n\tif (ret ==
     -EBUSY) {\r\n\t\tmsleep(10);\r\n\t\tret = restart_syscall();\r\n\t}\r\n\treturn
     ret;\r\n}\r\nEXPORT_SYMBOL_GPL(blkg_conf_prep);\r\n\r\n/**\r\n * blkg_conf_finish
-    - finish up per-blkg config update\r\n * @ctx: blkg_conf_ctx initialized by blkg_conf_prep()\r\n
-    *\r\n * Finish up after per-blkg config update.  This function must be paired\r\n
-    * with blkg_conf_prep().\r\n */\r\nvoid blkg_conf_finish(struct blkg_conf_ctx
-    *ctx)\r\n\t__releases(&ctx->bdev->bd_queue->queue_lock) __releases(rcu)\r\n{\r\n\tspin_unlock_irq(&bdev_get_queue(ctx->bdev)->queue_lock);\r\n\trcu_read_unlock();\r\n\tblkdev_put_no_open(ctx->bdev);\r\n}\r\nEXPORT_SYMBOL_GPL(blkg_conf_finish);\r\n\r\nstatic
+    - finish up per-blkg config update\r\n * @ctx: blkg_conf_ctx initialized by blkg_conf_prep()\r\n*\r\n*
+    Finish up after per-blkg config update.  This function must be paired\r\n* with
+    blkg_conf_prep().\r\n */\r\nvoid blkg_conf_finish(struct blkg_conf_ctx *ctx)\r\n\t__releases(&ctx->bdev->bd_queue->queue_lock)
+    __releases(rcu)\r\n{\r\n\tspin_unlock_irq(&bdev_get_queue(ctx->bdev)->queue_lock);\r\n\trcu_read_unlock();\r\n\tblkdev_put_no_open(ctx->bdev);\r\n}\r\nEXPORT_SYMBOL_GPL(blkg_conf_finish);\r\n\r\nstatic
     void blkg_iostat_set(struct blkg_iostat *dst, struct blkg_iostat *src)\r\n{\r\n\tint
     i;\r\n\r\n\tfor (i = 0; i < BLKG_IOSTAT_NR; i++) {\r\n\t\tdst->bytes[i] = src->bytes[i];\r\n\t\tdst->ios[i]
     = src->ios[i];\r\n\t}\r\n}\r\n\r\nstatic void blkg_iostat_add(struct blkg_iostat
@@ -541,12 +541,12 @@ MonoBehaviour:
     &q->blkg_list, q_node) {\r\n\t\tstruct blkcg *blkcg = blkg->blkcg;\r\n\r\n\t\tspin_lock(&blkcg->lock);\r\n\t\tif
     (blkg->pd[pol->plid]) {\r\n\t\t\tpol->pd_free_fn(blkg->pd[pol->plid]);\r\n\t\t\tblkg->pd[pol->plid]
     = NULL;\r\n\t\t}\r\n\t\tspin_unlock(&blkcg->lock);\r\n\t}\r\n\tspin_unlock_irq(&q->queue_lock);\r\n\tret
-    = -ENOMEM;\r\n\tgoto out;\r\n}\r\nEXPORT_SYMBOL_GPL(blkcg_activate_policy);\r\n\r\n/**\r\n
-    * blkcg_deactivate_policy - deactivate a blkcg policy on a request_queue\r\n
-    * @q: request_queue of interest\r\n * @pol: blkcg policy to deactivate\r\n *\r\n
-    * Deactivate @pol on @q.  Follows the same synchronization rules as\r\n * blkcg_activate_policy().\r\n
-    */\r\nvoid blkcg_deactivate_policy(struct request_queue *q,\r\n\t\t\t     const
-    struct blkcg_policy *pol)\r\n{\r\n\tstruct blkcg_gq *blkg;\r\n\r\n\tif (!blkcg_policy_enabled(q,
+    = -ENOMEM;\r\n\tgoto out;\r\n}\r\nEXPORT_SYMBOL_GPL(blkcg_activate_policy);\r\n\r\n/**\r\n*
+    blkcg_deactivate_policy - deactivate a blkcg policy on a request_queue\r\n* @q:
+    request_queue of interest\r\n * @pol: blkcg policy to deactivate\r\n *\r\n* Deactivate
+    @pol on @q.  Follows the same synchronization rules as\r\n * blkcg_activate_policy().\r\n*/\r\nvoid
+    blkcg_deactivate_policy(struct request_queue *q,\r\n\t\t\t     const struct blkcg_policy
+    *pol)\r\n{\r\n\tstruct blkcg_gq *blkg;\r\n\r\n\tif (!blkcg_policy_enabled(q,
     pol))\r\n\t\treturn;\r\n\r\n\tif (queue_is_mq(q))\r\n\t\tblk_mq_freeze_queue(q);\r\n\r\n\tspin_lock_irq(&q->queue_lock);\r\n\r\n\t__clear_bit(pol->plid,
     q->blkcg_pols);\r\n\r\n\tlist_for_each_entry(blkg, &q->blkg_list, q_node) {\r\n\t\tstruct
     blkcg *blkcg = blkg->blkcg;\r\n\r\n\t\tspin_lock(&blkcg->lock);\r\n\t\tif (blkg->pd[pol->plid])
@@ -578,8 +578,8 @@ MonoBehaviour:
     0;\r\n\r\nerr_free_cpds:\r\n\tif (pol->cpd_free_fn)\r\n\t\tblkcg_free_all_cpd(pol);\r\n\r\n\tblkcg_policy[pol->plid]
     = NULL;\r\nerr_unlock:\r\n\tmutex_unlock(&blkcg_pol_mutex);\r\n\tmutex_unlock(&blkcg_pol_register_mutex);\r\n\treturn
     ret;\r\n}\r\nEXPORT_SYMBOL_GPL(blkcg_policy_register);\r\n\r\n/**\r\n * blkcg_policy_unregister
-    - unregister a blkcg policy\r\n * @pol: blkcg policy to unregister\r\n *\r\n
-    * Undo blkcg_policy_register(@pol).  Might sleep.\r\n */\r\nvoid blkcg_policy_unregister(struct
+    - unregister a blkcg policy\r\n * @pol: blkcg policy to unregister\r\n *\r\n*
+    Undo blkcg_policy_register(@pol).  Might sleep.\r\n */\r\nvoid blkcg_policy_unregister(struct
     blkcg_policy *pol)\r\n{\r\n\tmutex_lock(&blkcg_pol_register_mutex);\r\n\r\n\tif
     (WARN_ON(blkcg_policy[pol->plid] != pol))\r\n\t\tgoto out_unlock;\r\n\r\n\t/*
     kill the intf files first */\r\n\tif (pol->dfl_cftypes)\r\n\t\tcgroup_rm_cftypes(pol->dfl_cftypes);\r\n\tif
@@ -648,69 +648,68 @@ MonoBehaviour:
     for reasons other than blkcg throttling, so we\r\n * check to see if current->throttle_queue
     is set and if not this doesn't do\r\n * anything.  This should only ever be called
     by the resume code, it's not meant\r\n * to be called by people willy-nilly as
-    it will actually do the work to\r\n * throttle the task if it is setup for throttling.\r\n
-    */\r\nvoid blkcg_maybe_throttle_current(void)\r\n{\r\n\tstruct request_queue
-    *q = current->throttle_queue;\r\n\tstruct blkcg *blkcg;\r\n\tstruct blkcg_gq
-    *blkg;\r\n\tbool use_memdelay = current->use_memdelay;\r\n\r\n\tif (!q)\r\n\t\treturn;\r\n\r\n\tcurrent->throttle_queue
-    = NULL;\r\n\tcurrent->use_memdelay = false;\r\n\r\n\trcu_read_lock();\r\n\tblkcg
-    = css_to_blkcg(blkcg_css());\r\n\tif (!blkcg)\r\n\t\tgoto out;\r\n\tblkg = blkg_lookup(blkcg,
-    q);\r\n\tif (!blkg)\r\n\t\tgoto out;\r\n\tif (!blkg_tryget(blkg))\r\n\t\tgoto
-    out;\r\n\trcu_read_unlock();\r\n\r\n\tblkcg_maybe_throttle_blkg(blkg, use_memdelay);\r\n\tblkg_put(blkg);\r\n\tblk_put_queue(q);\r\n\treturn;\r\nout:\r\n\trcu_read_unlock();\r\n\tblk_put_queue(q);\r\n}\r\n\r\n/**\r\n
-    * blkcg_schedule_throttle - this task needs to check for throttling\r\n * @disk:
-    disk to throttle\r\n * @use_memdelay: do we charge this to memory delay for PSI\r\n
-    *\r\n * This is called by the IO controller when we know there's delay accumulated\r\n
-    * for the blkg for this task.  We do not pass the blkg because there are places\r\n
-    * we call this that may not have that information, the swapping code for\r\n
-    * instance will only have a block_device at that point.  This set's the\r\n *
-    notify_resume for the task to check and see if it requires throttling before\r\n
-    * returning to user space.\r\n *\r\n * We will only schedule once per syscall. 
-    You can call this over and over\r\n * again and it will only do the check once
-    upon return to user space, and only\r\n * throttle once.  If the task needs to
-    be throttled again it'll need to be\r\n * re-set at the next time we see the
-    task.\r\n */\r\nvoid blkcg_schedule_throttle(struct gendisk *disk, bool use_memdelay)\r\n{\r\n\tstruct
+    it will actually do the work to\r\n * throttle the task if it is setup for throttling.\r\n*/\r\nvoid
+    blkcg_maybe_throttle_current(void)\r\n{\r\n\tstruct request_queue *q = current->throttle_queue;\r\n\tstruct
+    blkcg *blkcg;\r\n\tstruct blkcg_gq *blkg;\r\n\tbool use_memdelay = current->use_memdelay;\r\n\r\n\tif
+    (!q)\r\n\t\treturn;\r\n\r\n\tcurrent->throttle_queue = NULL;\r\n\tcurrent->use_memdelay
+    = false;\r\n\r\n\trcu_read_lock();\r\n\tblkcg = css_to_blkcg(blkcg_css());\r\n\tif
+    (!blkcg)\r\n\t\tgoto out;\r\n\tblkg = blkg_lookup(blkcg, q);\r\n\tif (!blkg)\r\n\t\tgoto
+    out;\r\n\tif (!blkg_tryget(blkg))\r\n\t\tgoto out;\r\n\trcu_read_unlock();\r\n\r\n\tblkcg_maybe_throttle_blkg(blkg,
+    use_memdelay);\r\n\tblkg_put(blkg);\r\n\tblk_put_queue(q);\r\n\treturn;\r\nout:\r\n\trcu_read_unlock();\r\n\tblk_put_queue(q);\r\n}\r\n\r\n/**\r\n*
+    blkcg_schedule_throttle - this task needs to check for throttling\r\n * @disk:
+    disk to throttle\r\n * @use_memdelay: do we charge this to memory delay for PSI\r\n*\r\n*
+    This is called by the IO controller when we know there's delay accumulated\r\n*
+    for the blkg for this task.  We do not pass the blkg because there are places\r\n*
+    we call this that may not have that information, the swapping code for\r\n* instance
+    will only have a block_device at that point.  This set's the\r\n * notify_resume
+    for the task to check and see if it requires throttling before\r\n* returning
+    to user space.\r\n *\r\n * We will only schedule once per syscall.  You can call
+    this over and over\r\n * again and it will only do the check once upon return
+    to user space, and only\r\n * throttle once.  If the task needs to be throttled
+    again it'll need to be\r\n * re-set at the next time we see the task.\r\n */\r\nvoid
+    blkcg_schedule_throttle(struct gendisk *disk, bool use_memdelay)\r\n{\r\n\tstruct
     request_queue *q = disk->queue;\r\n\r\n\tif (unlikely(current->flags & PF_KTHREAD))\r\n\t\treturn;\r\n\r\n\tif
     (current->throttle_queue != q) {\r\n\t\tif (!blk_get_queue(q))\r\n\t\t\treturn;\r\n\r\n\t\tif
     (current->throttle_queue)\r\n\t\t\tblk_put_queue(current->throttle_queue);\r\n\t\tcurrent->throttle_queue
-    = q;\r\n\t}\r\n\r\n\tif (use_memdelay)\r\n\t\tcurrent->use_memdelay = use_memdelay;\r\n\tset_notify_resume(current);\r\n}\r\n\r\n/**\r\n
-    * blkcg_add_delay - add delay to this blkg\r\n * @blkg: blkg of interest\r\n
-    * @now: the current time in nanoseconds\r\n * @delta: how many nanoseconds of
-    delay to add\r\n *\r\n * Charge @delta to the blkg's current delay accumulation. 
-    This is used to\r\n * throttle tasks if an IO controller thinks we need more
-    throttling.\r\n */\r\nvoid blkcg_add_delay(struct blkcg_gq *blkg, u64 now, u64
-    delta)\r\n{\r\n\tif (WARN_ON_ONCE(atomic_read(&blkg->use_delay) < 0))\r\n\t\treturn;\r\n\tblkcg_scale_delay(blkg,
-    now);\r\n\tatomic64_add(delta, &blkg->delay_nsec);\r\n}\r\n\r\n/**\r\n * blkg_tryget_closest
-    - try and get a blkg ref on the closet blkg\r\n * @bio: target bio\r\n * @css:
-    target css\r\n *\r\n * As the failure mode here is to walk up the blkg tree,
-    this ensure that the\r\n * blkg->parent pointers are always valid.  This returns
-    the blkg that it ended\r\n * up taking a reference on or %NULL if no reference
-    was taken.\r\n */\r\nstatic inline struct blkcg_gq *blkg_tryget_closest(struct
-    bio *bio,\r\n\t\tstruct cgroup_subsys_state *css)\r\n{\r\n\tstruct blkcg_gq *blkg,
-    *ret_blkg = NULL;\r\n\r\n\trcu_read_lock();\r\n\tblkg = blkg_lookup_create(css_to_blkcg(css),
-    bio->bi_bdev->bd_disk);\r\n\twhile (blkg) {\r\n\t\tif (blkg_tryget(blkg)) {\r\n\t\t\tret_blkg
-    = blkg;\r\n\t\t\tbreak;\r\n\t\t}\r\n\t\tblkg = blkg->parent;\r\n\t}\r\n\trcu_read_unlock();\r\n\r\n\treturn
-    ret_blkg;\r\n}\r\n\r\n/**\r\n * bio_associate_blkg_from_css - associate a bio
-    with a specified css\r\n * @bio: target bio\r\n * @css: target css\r\n *\r\n
-    * Associate @bio with the blkg found by combining the css's blkg and the\r\n
-    * request_queue of the @bio.  An association failure is handled by walking up\r\n
-    * the blkg tree.  Therefore, the blkg associated can be anything between @blkg\r\n
-    * and q->root_blkg.  This situation only happens when a cgroup is dying and\r\n
-    * then the remaining bios will spill to the closest alive blkg.\r\n *\r\n * A
-    reference will be taken on the blkg and will be released when @bio is\r\n * freed.\r\n
-    */\r\nvoid bio_associate_blkg_from_css(struct bio *bio,\r\n\t\t\t\t struct cgroup_subsys_state
-    *css)\r\n{\r\n\tif (bio->bi_blkg)\r\n\t\tblkg_put(bio->bi_blkg);\r\n\r\n\tif
+    = q;\r\n\t}\r\n\r\n\tif (use_memdelay)\r\n\t\tcurrent->use_memdelay = use_memdelay;\r\n\tset_notify_resume(current);\r\n}\r\n\r\n/**\r\n*
+    blkcg_add_delay - add delay to this blkg\r\n * @blkg: blkg of interest\r\n* @now:
+    the current time in nanoseconds\r\n * @delta: how many nanoseconds of delay to
+    add\r\n *\r\n * Charge @delta to the blkg's current delay accumulation.  This
+    is used to\r\n * throttle tasks if an IO controller thinks we need more throttling.\r\n*/\r\nvoid
+    blkcg_add_delay(struct blkcg_gq *blkg, u64 now, u64 delta)\r\n{\r\n\tif (WARN_ON_ONCE(atomic_read(&blkg->use_delay)
+    < 0))\r\n\t\treturn;\r\n\tblkcg_scale_delay(blkg, now);\r\n\tatomic64_add(delta,
+    &blkg->delay_nsec);\r\n}\r\n\r\n/**\r\n * blkg_tryget_closest - try and get a
+    blkg ref on the closet blkg\r\n * @bio: target bio\r\n * @css: target css\r\n*\r\n*
+    As the failure mode here is to walk up the blkg tree, this ensure that the\r\n*
+    blkg->parent pointers are always valid.  This returns the blkg that it ended\r\n*
+    up taking a reference on or %NULL if no reference was taken.\r\n*/\r\nstatic
+    inline struct blkcg_gq *blkg_tryget_closest(struct bio *bio,\r\n\t\tstruct cgroup_subsys_state
+    *css)\r\n{\r\n\tstruct blkcg_gq *blkg, *ret_blkg = NULL;\r\n\r\n\trcu_read_lock();\r\n\tblkg
+    = blkg_lookup_create(css_to_blkcg(css), bio->bi_bdev->bd_disk);\r\n\twhile (blkg)
+    {\r\n\t\tif (blkg_tryget(blkg)) {\r\n\t\t\tret_blkg = blkg;\r\n\t\t\tbreak;\r\n\t\t}\r\n\t\tblkg
+    = blkg->parent;\r\n\t}\r\n\trcu_read_unlock();\r\n\r\n\treturn ret_blkg;\r\n}\r\n\r\n/**\r\n*
+    bio_associate_blkg_from_css - associate a bio with a specified css\r\n * @bio:
+    target bio\r\n * @css: target css\r\n *\r\n* Associate @bio with the blkg found
+    by combining the css's blkg and the\r\n* request_queue of the @bio.  An association
+    failure is handled by walking up\r\n* the blkg tree.  Therefore, the blkg associated
+    can be anything between @blkg\r\n* and q->root_blkg.  This situation only happens
+    when a cgroup is dying and\r\n* then the remaining bios will spill to the closest
+    alive blkg.\r\n *\r\n * A reference will be taken on the blkg and will be released
+    when @bio is\r\n * freed.\r\n*/\r\nvoid bio_associate_blkg_from_css(struct bio
+    *bio,\r\n\t\t\t\t struct cgroup_subsys_state *css)\r\n{\r\n\tif (bio->bi_blkg)\r\n\t\tblkg_put(bio->bi_blkg);\r\n\r\n\tif
     (css && css->parent) {\r\n\t\tbio->bi_blkg = blkg_tryget_closest(bio, css);\r\n\t}
     else {\r\n\t\tblkg_get(bdev_get_queue(bio->bi_bdev)->root_blkg);\r\n\t\tbio->bi_blkg
-    = bdev_get_queue(bio->bi_bdev)->root_blkg;\r\n\t}\r\n}\r\nEXPORT_SYMBOL_GPL(bio_associate_blkg_from_css);\r\n\r\n/**\r\n
-    * bio_associate_blkg - associate a bio with a blkg\r\n * @bio: target bio\r\n
-    *\r\n * Associate @bio with the blkg found from the bio's css and request_queue.\r\n
-    * If one is not found, bio_lookup_blkg() creates the blkg.  If a blkg is\r\n
-    * already associated, the css is reused and association redone as the\r\n * request_queue
+    = bdev_get_queue(bio->bi_bdev)->root_blkg;\r\n\t}\r\n}\r\nEXPORT_SYMBOL_GPL(bio_associate_blkg_from_css);\r\n\r\n/**\r\n*
+    bio_associate_blkg - associate a bio with a blkg\r\n * @bio: target bio\r\n*\r\n*
+    Associate @bio with the blkg found from the bio's css and request_queue.\r\n*
+    If one is not found, bio_lookup_blkg() creates the blkg.  If a blkg is\r\n* already
+    associated, the css is reused and association redone as the\r\n * request_queue
     may have changed.\r\n */\r\nvoid bio_associate_blkg(struct bio *bio)\r\n{\r\n\tstruct
     cgroup_subsys_state *css;\r\n\r\n\trcu_read_lock();\r\n\r\n\tif (bio->bi_blkg)\r\n\t\tcss
     = bio_blkcg_css(bio);\r\n\telse\r\n\t\tcss = blkcg_css();\r\n\r\n\tbio_associate_blkg_from_css(bio,
-    css);\r\n\r\n\trcu_read_unlock();\r\n}\r\nEXPORT_SYMBOL_GPL(bio_associate_blkg);\r\n\r\n/**\r\n
-    * bio_clone_blkg_association - clone blkg association from src to dst bio\r\n
-    * @dst: destination bio\r\n * @src: source bio\r\n */\r\nvoid bio_clone_blkg_association(struct
+    css);\r\n\r\n\trcu_read_unlock();\r\n}\r\nEXPORT_SYMBOL_GPL(bio_associate_blkg);\r\n\r\n/**\r\n*
+    bio_clone_blkg_association - clone blkg association from src to dst bio\r\n*
+    @dst: destination bio\r\n * @src: source bio\r\n */\r\nvoid bio_clone_blkg_association(struct
     bio *dst, struct bio *src)\r\n{\r\n\tif (src->bi_blkg)\r\n\t\tbio_associate_blkg_from_css(dst,
     bio_blkcg_css(src));\r\n}\r\nEXPORT_SYMBOL_GPL(bio_clone_blkg_association);\r\n\r\nstatic
     int blk_cgroup_io_type(struct bio *bio)\r\n{\r\n\tif (op_is_discard(bio->bi_opf))\r\n\t\treturn
@@ -740,7 +739,8 @@ MonoBehaviour:
     stats, false if not\");"
   _textField: {fileID: 1562588492}
   _scrollView: {fileID: 469263117}
-  _charPerClick: 3
+  _charPerClick: 2
+  _currentText: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -838,6 +838,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7a6d1d86a74dd44faf054a9de092dd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &770687587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 770687588}
+  - component: {fileID: 770687589}
+  m_Layer: 5
+  m_Name: Spawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &770687588
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 770687587}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 831143112}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -50}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &770687589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 770687587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7edb1b2e169904b4880697b345e8b722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _windowPrefab: {fileID: 2788018109049636897, guid: 9a9adf9374f3d914596c13186068af3b, type: 3}
+  _spawnDelay: 3
+  _startSpawnDelay: 5
 --- !u!1 &831143108
 GameObject:
   m_ObjectHideFlags: 0
@@ -891,7 +943,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0.5
+  m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -907,7 +959,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -931,6 +983,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 469263116}
+  - {fileID: 770687588}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1062,11 +1115,11 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
+  m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: '|'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1117,12 +1170,12 @@ MonoBehaviour:
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
-  m_isRichText: 1
+  m_isRichText: 0
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_horizontalMapping: 0
-  m_verticalMapping: 0
+  m_verticalMapping: 1
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
