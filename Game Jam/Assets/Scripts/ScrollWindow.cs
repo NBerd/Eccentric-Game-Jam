@@ -21,17 +21,17 @@ public class ScrollWindow : Window
         float deltaX = _transform.sizeDelta.x * _screenInfo.Scale / 2;
         float deltaY = _transform.sizeDelta.y * _screenInfo.Scale / 2;
 
-        float minX = _screenInfo.Bounds.min.x + deltaX;
-        float maxX = _screenInfo.Bounds.max.x - deltaX;
+        float minX = _screenInfo.ScreenBounds.min.x + deltaX;
+        float maxX = _screenInfo.ScreenBounds.max.x - deltaX;
 
         float positionX = Random.Range(minX, maxX);
-        float positionY = _screenInfo.Bounds.max.y + deltaY;
+        float positionY = _screenInfo.ScreenBounds.max.y + deltaY;
 
         transform.position = new Vector2(positionX, positionY);
 
         _startPosition = transform.position;
         _targetPosition = _startPosition;
-        _targetPosition.y = _screenInfo.Bounds.min.y - deltaY;
+        _targetPosition.y = _screenInfo.ScreenBounds.min.y - deltaY;
     }
 
     private void Update()

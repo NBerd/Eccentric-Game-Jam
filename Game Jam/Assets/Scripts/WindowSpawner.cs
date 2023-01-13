@@ -8,7 +8,6 @@ public class WindowSpawner : MonoBehaviour
 
     private void Start()
     {
-
         InvokeRepeating(nameof(Spawn), _startSpawnDelay, _spawnDelay);
     }
 

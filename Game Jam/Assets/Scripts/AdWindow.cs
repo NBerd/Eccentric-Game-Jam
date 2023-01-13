@@ -9,22 +9,21 @@ public class AdWindow : Window
         SetStartPosition();
     }
 
-    private void SetStartPosition() 
+    protected void SetStartPosition() 
     {
-
         float deltaX = _transform.sizeDelta.x * _screenInfo.Scale / 2;
 
-        float minX = _screenInfo.Bounds.min.x + deltaX;
-        float maxX = _screenInfo.Bounds.max.x - deltaX;
+        float minX = _screenInfo.PageBounds.min.x + deltaX;
+        float maxX = _screenInfo.PageBounds.max.x - deltaX;
 
         float deltaY = _transform.sizeDelta.y * _screenInfo.Scale / 2;
 
-        float minY = _screenInfo.Bounds.min.y + deltaY;
-        float maxY = _screenInfo.Bounds.max.y - deltaY;
+        float minY = _screenInfo.PageBounds.min.y + deltaY;
+        float maxY = _screenInfo.PageBounds.max.y - deltaY;
 
         float positionX = Random.Range(minX, maxX);
         float positionY = Random.Range(minY, maxY);
 
-        transform.position = new Vector2(positionX, positionY);
+        transform.position = new(positionX, positionY);
     }
 }

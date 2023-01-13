@@ -3,6 +3,7 @@ using UnityEngine;
 public class Screen : MonoBehaviour
 {
     [SerializeField] private Canvas _canvas;
+    [SerializeField] private RectTransform _page;
 
     public static ScreenInfo ScreenInfo { get; private set; }
 
@@ -14,18 +15,22 @@ public class Screen : MonoBehaviour
         Vector2 screenSize = new(screenWidth, screenHeight);
         Vector2 screenPosition = new(screenWidth / 2, screenHeight / 2);
 
-        ScreenInfo = new(new(screenPosition, screenSize), _canvas.scaleFactor);
+        Bounds pageBounds = new(_page.position, new(_page.rect.width, _page.rect.height));
+
+        ScreenInfo = new(new(screenPosition, screenSize), pageBounds, _canvas.scaleFactor);
     }
 }
 
 public struct ScreenInfo
 {
-    public Bounds Bounds;
+    public Bounds ScreenBounds;
+    public Bounds PageBounds;
     public float Scale;
 
-    public ScreenInfo(Bounds bounds, float scale)
+    public ScreenInfo(Bounds screenBounds, Bounds pageBounds, float scale)
     {
-        Bounds = bounds;
+        ScreenBounds = screenBounds;
+        PageBounds = pageBounds;
         Scale = scale;
     }
 }
