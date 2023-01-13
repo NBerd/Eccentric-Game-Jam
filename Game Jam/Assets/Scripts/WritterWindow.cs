@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class WritterWindow : MonoBehaviour
 {
@@ -7,15 +8,30 @@ public class WritterWindow : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _text;
     [SerializeField] private string _succesColor;
 
+    private static List<string> CurrentWords;
+
     private string _currentWord;
     private int _currentCharId;
 
     private void Start()
     {
-        string[] words = _library.Words;
+        _text.text = GetRandomWord();
+    }
 
-        _currentWord = words[Random.Range(0, words.Length)].ToUpper();
-        _text.text = _currentWord;
+    private void UpdateLibrary() 
+    {
+        CurrentWords = new(_library.Words);
+    }
+
+    private string GetRandomWord() 
+    {
+        if (CurrentWords == null || CurrentWords.Count == 0) 
+            UpdateLibrary();
+
+        _currentWord = CurrentWords[Random.Range(0, CurrentWords.Count)].ToUpper();
+        CurrentWords.Remove(_currentWord);
+
+        return _currentWord;
     }
 
     private void OnEnable()

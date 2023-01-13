@@ -3,54 +3,50 @@ using UnityEngine;
 
 public class BannerManager : MonoBehaviour
 {
-    [SerializeField] private int _maxBannerCount;
-    [SerializeField] private float _startSpawnDelay;
-    [SerializeField] private float _spawnDelay;
-    [SerializeField] private BannerWindow[] _bannerPrefabs;
+    [SerializeField] private List<Banner> _notActiveBanners;
+    [SerializeField] private float _delay;
+    [SerializeField] private float _startDelay;
 
-    private readonly Queue<BannerWindow> _activeWindows = new();
-    private readonly List<BannerWindow> _notActiveWindows = new();
+    private readonly Queue<Banner> _activeBanners = new();
+
+    #region Singleton
+
+    public static BannerManager Instance;
+
+    private void Awake()
+    {
+        if (Instance != null) 
+            Destroy(Instance.gameObject);
+
+        Instance = this;
+    }
+
+    #endregion
 
     private void Start()
     {
-        InstantiateBanners();
-
-        InvokeRepeating(nameof(SpawnBanner), _startSpawnDelay, _spawnDelay);
+        InvokeRepeating(nameof(OpenRandomBanner), _startDelay, _delay);
     }
 
-    private void InstantiateBanners() 
+    private void OpenRandomBanner() 
     {
-        for(int i = 0; i < _maxBannerCount; i++) 
+        Banner banner = null;
+
+        if (_notActiveBanners.Count == 0 && _activeBanners.Count > 0) 
         {
-            BannerWindow banner = Instantiate(_bannerPrefabs[Random.Range(0, _bannerPrefabs.Length)], transform);
-            banner.gameObject.SetActive(false);
-            banner.SetSettings();
-
-            _notActiveWindows.Add(banner);
+            banner = _activeBanners.Dequeue();
+            banner.Close();
         }
+
+        banner = banner == null ? _notActiveBanners[Random.Range(0, _notActiveBanners.Count)] : banner;
+        banner.Open();
+
+        _notActiveBanners.Remove(banner);
+        _activeBanners.Enqueue(banner);
     }
 
-    private void SpawnBanner() 
+    public void ReturnBanner(Banner banner) 
     {
-        BannerWindow banner;
-
-        if (_notActiveWindows.Count == 0) 
-        {
-            banner = _activeWindows.Dequeue();
-
-            _notActiveWindows.Add(banner);
-        }
-        else 
-            banner = _notActiveWindows[Random.Range(0, _notActiveWindows.Count)];
-
-        banner.Init();
-
-        _activeWindows.Enqueue(banner);
-        _notActiveWindows.Remove(banner);
-    }
-
-    public void ReturnBanner(BannerWindow banner) 
-    {
-        _notActiveWindows.Add(banner);
+        _notActiveBanners.Add(banner);
     }
 }

@@ -5,12 +5,13 @@ public class TextField : MonoBehaviour
 {
     private const char CURSOR_CHAR_0 = ' ';
     private const char CURSOR_CHAR = '|';
-    private const float CURSOR_UPDATE_TIME = .5f;
+    private const float CURSOR_UPDATE_TIME = .75f;
 
     [TextArea(10, 25)]
     [SerializeField] private string _text;
     [SerializeField] private TextMeshProUGUI _textField;
     [SerializeField] private int _charPerClick;
+    [SerializeField] private Progress _progress;
 
     private int _currentIndex;
     private string _currentText;
@@ -39,8 +40,7 @@ public class TextField : MonoBehaviour
 
         _currentText = _text.Substring(0, _currentIndex);
 
-        if (_currentIndex == _text.Length) 
-            Debug.Log("Win!");
+        _progress.SetProgress((float)_currentText.Length / _text.Length);
 
         UpdateCursor();
     }
@@ -49,7 +49,13 @@ public class TextField : MonoBehaviour
     {
         char lastChar = _currentText[^1];
 
-        _currentText = lastChar == CURSOR_CHAR ? _currentText[0..^1] + CURSOR_CHAR_0 : _currentText[0..^1] + CURSOR_CHAR;
+        if (lastChar == CURSOR_CHAR)
+            _currentText = _currentText[0..^1] + CURSOR_CHAR_0;
+        else if (lastChar == CURSOR_CHAR_0)
+            _currentText = _currentText[0..^1] + CURSOR_CHAR;
+        else 
+            _currentText += CURSOR_CHAR;
+
 
         UpdateText();
     }
