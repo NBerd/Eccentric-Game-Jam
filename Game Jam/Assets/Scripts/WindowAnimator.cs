@@ -18,8 +18,11 @@ public class WindowAnimator : MonoBehaviour
 
     public void SpawnAnimation() 
     {
-        if(_animationCoroutine != null) 
+        if (_animationCoroutine != null) 
+        {
             StopCoroutine(_animationCoroutine);
+            _animationCoroutine = null;
+        }
 
         _animationCoroutine = StartCoroutine(SpawnAnimationCoroutine());
     }

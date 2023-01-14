@@ -6,12 +6,12 @@ public class Progress : MonoBehaviour
 {
     [SerializeField] private Image _proggressBar;
 
-    public static event Action<float> OnProgressChange;
+    public static event Action<float, int> OnProgressChange;
 
-    public void SetProgress(float progress) 
+    public void SetProgress(float progress, int charCount) 
     {
         _proggressBar.fillAmount = progress;
 
-        OnProgressChange?.Invoke(progress);
+        OnProgressChange?.Invoke(progress, charCount);
     }
 }

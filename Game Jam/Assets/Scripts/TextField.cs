@@ -40,7 +40,7 @@ public class TextField : MonoBehaviour
 
         _currentText = _text.Substring(0, _currentIndex);
 
-        _progress.SetProgress((float)_currentText.Length / _text.Length);
+        _progress.SetProgress((float)_currentText.Length / _text.Length, _currentIndex);
 
         UpdateCursor();
     }

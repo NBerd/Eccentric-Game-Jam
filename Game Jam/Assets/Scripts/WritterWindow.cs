@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using System;
 
 public class WritterWindow : MonoBehaviour
 {
@@ -13,12 +14,21 @@ public class WritterWindow : MonoBehaviour
     private string _currentWord;
     private int _currentCharId;
 
+    private Action _callback;
+
     private void Start()
     {
-        _text.text = GetRandomWord();
+        if (_currentWord == null) 
+            Set();
     }
 
-    private void UpdateLibrary() 
+    public void Set(string startWord = null, Action onClose = null)
+    {
+        _currentWord = startWord ?? GetRandomWord();
+        _callback = onClose ?? null;
+    }
+
+    private void UpdateLibrary()
     {
         CurrentWords = new(_library.Words);
     }
@@ -28,10 +38,11 @@ public class WritterWindow : MonoBehaviour
         if (CurrentWords == null || CurrentWords.Count == 0) 
             UpdateLibrary();
 
-        _currentWord = CurrentWords[Random.Range(0, CurrentWords.Count)].ToUpper();
-        CurrentWords.Remove(_currentWord);
+        string word = CurrentWords[UnityEngine.Random.Range(0, CurrentWords.Count)].ToUpper();
 
-        return _currentWord;
+        CurrentWords.Remove(word);
+
+        return word;
     }
 
     private void OnEnable()
@@ -64,7 +75,7 @@ public class WritterWindow : MonoBehaviour
         }
 
         if (_currentCharId >= _currentWord.Length)
-            Destroy(gameObject);
+            Close();
     }
 
     private void UpdateProggres() 
@@ -72,5 +83,11 @@ public class WritterWindow : MonoBehaviour
         string newText = $"<color={_succesColor}>" + _currentWord.Insert(_currentCharId, $"</color>");
 
         _text.text = newText;
+    }
+
+    private void Close() 
+    {
+        _callback?.Invoke();
+        Destroy(gameObject);
     }
 }
