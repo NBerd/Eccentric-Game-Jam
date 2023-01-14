@@ -15,6 +15,6 @@ public class WindowSpawner : MonoBehaviour
     {
         Window window = Instantiate(_windowPrefab, transform);
 
-        window.Init();
+        window.Init(this);
     }
 }

@@ -9,9 +9,9 @@ public class ScrollWindow : Window
 
     private float _timer = 0;
 
-    public override void Init()
+    public override void Init(WindowSpawner spawner)
     {
-        base.Init();
+        base.Init(spawner);
 
         SetPosition();
     }
@@ -27,7 +27,7 @@ public class ScrollWindow : Window
         float positionX = Random.Range(minX, maxX);
         float positionY = _screenInfo.PageBounds.max.y + deltaY;
 
-        transform.position = new Vector2(positionX, positionY);
+        _transform.position = new Vector2(positionX, positionY);
 
         _startPosition = transform.position;
         _targetPosition = _startPosition;

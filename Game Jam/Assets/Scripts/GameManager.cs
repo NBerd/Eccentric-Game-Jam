@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerInput _input;
     [SerializeField] private BannerManager _bannerManager;
     [SerializeField] private WindowSpawner _mainSpawner;
+    [SerializeField] private WindowSpawner _pageSpawner;
     [SerializeField] private CookiesWindow _cookiesWindow;
     [SerializeField] private Message _message;
 
@@ -56,6 +57,7 @@ public class GameManager : MonoBehaviour
             {
                 _input.enabled = true;
                 _bannerManager.enabled = true;
+                _pageSpawner.enabled = true;
                 Time.timeScale = 1;
             });
         });
@@ -109,8 +111,6 @@ public struct GameState
 
     public void UpdateProgress(float progress, int charCount) 
     {
-        Debug.Log($"{progress} {_progressToComplite}");
-
         if (progress >= _progressToComplite || charCount >= _charCountToComplite) 
             _callback?.Invoke();
     }
