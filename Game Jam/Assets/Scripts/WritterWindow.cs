@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
-using System;
 
 public class WritterWindow : MonoBehaviour
 {
@@ -14,18 +13,11 @@ public class WritterWindow : MonoBehaviour
     private string _currentWord;
     private int _currentCharId;
 
-    private Action _callback;
-
     private void Start()
     {
-        if (_currentWord == null) 
-            Set();
-    }
+        _currentWord = GetRandomWord();
 
-    public void Set(string startWord = null, Action onClose = null)
-    {
-        _currentWord = startWord ?? GetRandomWord();
-        _callback = onClose ?? null;
+        _text.text = _currentWord;
     }
 
     private void UpdateLibrary()
@@ -38,11 +30,11 @@ public class WritterWindow : MonoBehaviour
         if (CurrentWords == null || CurrentWords.Count == 0) 
             UpdateLibrary();
 
-        string word = CurrentWords[UnityEngine.Random.Range(0, CurrentWords.Count)].ToUpper();
+        string word = CurrentWords[Random.Range(0, CurrentWords.Count)];
 
         CurrentWords.Remove(word);
 
-        return word;
+        return word.ToUpper();
     }
 
     private void OnEnable()
@@ -87,7 +79,6 @@ public class WritterWindow : MonoBehaviour
 
     private void Close() 
     {
-        _callback?.Invoke();
         Destroy(gameObject);
     }
 }

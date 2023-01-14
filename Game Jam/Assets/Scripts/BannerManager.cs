@@ -5,7 +5,7 @@ public class BannerManager : MonoBehaviour
 {
     [SerializeField] private List<Banner> _notActiveBanners;
     [SerializeField] private float _delay;
-    [SerializeField] private float _startDelay;
+    [SerializeField] private int _maxBannerCount;
 
     private readonly Queue<Banner> _activeBanners = new();
 
@@ -25,20 +25,22 @@ public class BannerManager : MonoBehaviour
 
     private void Start()
     {
-        InvokeRepeating(nameof(OpenRandomBanner), _startDelay, _delay);
+        _maxBannerCount = _maxBannerCount > _notActiveBanners.Count ? _notActiveBanners.Count : _maxBannerCount;
+
+        InvokeRepeating(nameof(OpenRandomBanner), 0, _delay);
     }
 
     private void OpenRandomBanner() 
     {
-        Banner banner = null;
+        Banner banner;
 
-        if (_notActiveBanners.Count == 0 && _activeBanners.Count > 0) 
+        if (_activeBanners.Count >= _maxBannerCount) 
         {
             banner = _activeBanners.Dequeue();
             banner.Close();
         }
 
-        banner = banner == null ? _notActiveBanners[Random.Range(0, _notActiveBanners.Count)] : banner;
+        banner = _notActiveBanners[Random.Range(0, _notActiveBanners.Count)];
         banner.Open();
 
         _notActiveBanners.Remove(banner);

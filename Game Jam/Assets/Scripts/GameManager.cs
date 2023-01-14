@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerInput _input;
     [SerializeField] private BannerManager _bannerManager;
     [SerializeField] private WindowSpawner _mainSpawner;
-    [SerializeField] private WritterWindow _writterWindow;
+    [SerializeField] private CookiesWindow _cookiesWindow;
     [SerializeField] private Message _message;
 
     private Queue<GameState> _gameStates = new();
@@ -22,38 +22,49 @@ public class GameManager : MonoBehaviour
 
     private void GenerateStory() 
     {
-        GameState typeState = new(this, float.MaxValue, 4, () => 
+        GameState typeState = new(float.MaxValue, 10, () => 
         {
+            ToNextState();
             _input.enabled = false;
-            _message.Set("Ты ведь успеешь дописать материал до выступления?", () => 
-            {
-                _input.enabled = true;
-                ToNextState();
-            });
+
+            _message.Set("Ты ведь успеешь дописать материал до выступления?", () => _input.enabled = true);
         });
 
         _gameStates.Enqueue(typeState);
 
-        GameState wordState = new(this, float.MaxValue, 15, () => 
+        GameState wordState = new(float.MaxValue, 50, () => 
         {
+            ToNextState();
             _input.enabled = false;
-            _message.Set("Попробуй пошутить про говно. Всегда заходило.", () =>
+
+            _message.Set("Попробуй шутить про говно, или что-то в этом роде. Людям нравится", () =>
             {
                 _input.enabled = true;
-                _writterWindow.Set("ГОВНО", () => 
-                {
-                    _mainSpawner.enabled = true;
-                    ToNextState();
-                });
-                _writterWindow.gameObject.SetActive(true);
+                _mainSpawner.enabled = true;
             });
         });
 
         _gameStates.Enqueue(wordState);
 
-        GameState cookiesState = new(this, 0.1f, int.MaxValue, () => _bannerManager.enabled = true);
+        GameState cookiesState = new(.25f, int.MaxValue, () => 
+        {
+            ToNextState();
+            _input.enabled = false;
+            Time.timeScale = 0.1f;
+
+            _cookiesWindow.Open(() =>
+            {
+                _input.enabled = true;
+                _bannerManager.enabled = true;
+                Time.timeScale = 1;
+            });
+        });
 
         _gameStates.Enqueue(cookiesState);
+
+        GameState winState = new(1, int.MaxValue, () => Debug.Log("Win!"));
+
+        _gameStates.Enqueue(winState);
     }
 
     private void OnEnable()
@@ -74,7 +85,9 @@ public class GameManager : MonoBehaviour
     public void ToNextState() 
     {
         if (_gameStates.Count == 0) 
+        {
             return;
+        }
 
         _currentState = _gameStates.Dequeue();
     }
@@ -82,14 +95,12 @@ public class GameManager : MonoBehaviour
 
 public struct GameState 
 {
-    private GameManager _gameManager;
     private readonly float _progressToComplite;
     private readonly float _charCountToComplite;
     private readonly Action _callback;
 
-    public GameState(GameManager gameManager, float progressToComplite, int charCountToComplite, Action onComplite = null) 
+    public GameState(float progressToComplite, int charCountToComplite, Action onComplite = null) 
     {
-        _gameManager = gameManager;
         _progressToComplite = progressToComplite;
         _charCountToComplite = charCountToComplite;
 
@@ -101,8 +112,6 @@ public struct GameState
         Debug.Log($"{progress} {_progressToComplite}");
 
         if (progress >= _progressToComplite || charCount >= _charCountToComplite) 
-        {
             _callback?.Invoke();
-        }
     }
 }

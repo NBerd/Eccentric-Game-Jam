@@ -13,10 +13,10 @@ public class ScrollWindow : Window
     {
         base.Init();
 
-        SetStartPosition();
+        SetPosition();
     }
 
-    private void SetStartPosition() 
+    private void SetPosition() 
     {
         float deltaX = _transform.sizeDelta.x * _screenInfo.Scale / 2;
         float deltaY = _transform.sizeDelta.y * _screenInfo.Scale / 2;
