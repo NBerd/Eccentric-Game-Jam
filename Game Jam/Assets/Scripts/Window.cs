@@ -15,10 +15,13 @@ public class Window : MonoBehaviour
     public virtual void Init(WindowSpawner spawner)
     {
         _screenInfo = Screen.ScreenInfo;
+        _spawner = spawner;
     }
 
     public virtual void CloseWindow() 
     {
+        _spawner.ReturnWindow(this);
+
         Destroy(gameObject);
     }
 }

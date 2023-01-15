@@ -59,6 +59,8 @@ public class GameManager : MonoBehaviour
                 _bannerManager.enabled = true;
                 _pageSpawner.enabled = true;
                 Time.timeScale = 1;
+
+                _message.Set("Всё в порядке?");
             });
         });
 

@@ -12,6 +12,7 @@ public class Message : MonoBehaviour
     [SerializeField] private RectTransform _transform;
     [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private TextMeshProUGUI _messageText;
+    [SerializeField] private Sound _sound;
 
     private Coroutine _currentAnimation;
     private Action _callback;
@@ -29,6 +30,7 @@ public class Message : MonoBehaviour
         Reset();
 
         _messageText.text = messageText;
+        _sound.Play();
 
         StartCoroutine(PopUpAnimation());
     }

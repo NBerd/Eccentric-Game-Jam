@@ -3,6 +3,8 @@ using System;
 
 public class PlayerInput : MonoBehaviour
 {
+    [SerializeField] private Sound _typeSound;
+
     public static event Action<string> OnType;
 
     private void Update()
@@ -11,6 +13,7 @@ public class PlayerInput : MonoBehaviour
 
         if (Input.anyKeyDown && !string.IsNullOrEmpty(inputText)) 
         {
+            _typeSound.Play();
             OnType?.Invoke(inputText);
         }
     }

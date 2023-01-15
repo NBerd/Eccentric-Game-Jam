@@ -7,6 +7,8 @@ public class WritterWindow : MonoBehaviour
     [SerializeField] private Library _library;
     [SerializeField] private TextMeshProUGUI _text;
     [SerializeField] private string _succesColor;
+    [SerializeField] private Window _window;
+    [SerializeField] private Sound _compliteSound;
 
     private static List<string> CurrentWords;
 
@@ -52,10 +54,9 @@ public class WritterWindow : MonoBehaviour
         if (_currentWord == null)
             return;
 
-        char currentChar = _currentWord[_currentCharId];
-
         for (int i = 0; i < inputText.Length; i++)
         {
+            char currentChar = _currentWord[_currentCharId];
             char inputChar = inputText[i];
 
             if (inputChar == currentChar) 
@@ -65,9 +66,6 @@ public class WritterWindow : MonoBehaviour
                 UpdateProggres();
             }
         }
-
-        if (_currentCharId >= _currentWord.Length)
-            Close();
     }
 
     private void UpdateProggres() 
@@ -75,10 +73,15 @@ public class WritterWindow : MonoBehaviour
         string newText = $"<color={_succesColor}>" + _currentWord.Insert(_currentCharId, $"</color>");
 
         _text.text = newText;
-    }
 
-    private void Close() 
-    {
-        Destroy(gameObject);
+        if (_currentCharId >= _currentWord.Length) 
+        {
+            _compliteSound.Play();
+
+            _window.enabled = false;
+            _window.Invoke(nameof(_window.CloseWindow), .2f);
+
+            PlayerInput.OnType -= Write;
+        }
     }
 }
