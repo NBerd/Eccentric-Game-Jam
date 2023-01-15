@@ -45,4 +45,9 @@ public class Banner : MonoBehaviour
 
         BannerManager.Instance.ReturnBanner(this);
     }
+
+    public void OnClick() 
+    {
+        GameManager.Instance.Defeat("Стоило заниматся делом делом...");
+    }
 }

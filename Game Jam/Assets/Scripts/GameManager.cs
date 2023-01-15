@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,9 +11,28 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WindowSpawner _pageSpawner;
     [SerializeField] private CookiesWindow _cookiesWindow;
     [SerializeField] private Message _message;
+    [SerializeField] private Skype _skype;
+    [SerializeField] private WinScreen _winScreen;
+    [SerializeField] private LoseScreen _loseScreen;
 
     private Queue<GameState> _gameStates = new();
     private GameState _currentState;
+
+    public bool IsPlaying { get; private set; } = true;
+
+    #region Singleton
+
+    public static GameManager Instance;
+
+    private void Awake()
+    {
+        if (Instance != null) 
+            Destroy(Instance.gameObject);
+
+        Instance = this;
+    }
+
+    #endregion
 
     private void Start()
     {
@@ -50,6 +70,7 @@ public class GameManager : MonoBehaviour
         GameState cookiesState = new(.25f, int.MaxValue, () => 
         {
             ToNextState();
+
             _input.enabled = false;
             Time.timeScale = 0.1f;
 
@@ -66,7 +87,28 @@ public class GameManager : MonoBehaviour
 
         _gameStates.Enqueue(cookiesState);
 
-        GameState winState = new(1, int.MaxValue, () => Debug.Log("Win!"));
+        GameState skypeState = new(.35f, int.MaxValue, () =>
+        {
+            ToNextState();
+
+            _skype.enabled = true;
+        });
+
+        _gameStates.Enqueue(skypeState);
+
+        GameState winState = new(1, int.MaxValue, () => 
+        {
+            IsPlaying = false;
+
+            _mainSpawner.enabled = false;
+            _bannerManager.enabled = false;
+            _pageSpawner.enabled = false;
+            _pageSpawner.CloseAll();
+
+            _winScreen.Open();
+
+            ToNextState();
+        });
 
         _gameStates.Enqueue(winState);
     }
@@ -83,6 +125,9 @@ public class GameManager : MonoBehaviour
 
     private void OnProggressChange(float progress, int charCount) 
     {
+        if (_currentState == null) 
+            return;
+
         _currentState.UpdateProgress(progress, charCount);
     }
 
@@ -90,14 +135,40 @@ public class GameManager : MonoBehaviour
     {
         if (_gameStates.Count == 0) 
         {
+            _currentState = null;
+
             return;
         }
 
         _currentState = _gameStates.Dequeue();
     }
+
+    public void Defeat(string cause = null) 
+    {
+        if (IsPlaying == false) 
+            return;
+
+        _loseScreen.Open(cause);
+
+        _mainSpawner.enabled = false;
+        _bannerManager.enabled = false;
+        _pageSpawner.enabled = false;
+
+        IsPlaying = false;
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void Reload() 
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
 }
 
-public struct GameState 
+public class GameState 
 {
     private readonly float _progressToComplite;
     private readonly float _charCountToComplite;

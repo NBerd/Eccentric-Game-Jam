@@ -7,7 +7,9 @@ public class BannerManager : MonoBehaviour
     [SerializeField] private float _delay;
     [SerializeField] private int _maxBannerCount;
 
-    private readonly Queue<Banner> _activeBanners = new();
+    private readonly List<Banner> _activeBanners = new();
+
+    private float _lastSpawnTime = 0;
 
     #region Singleton
 
@@ -26,8 +28,12 @@ public class BannerManager : MonoBehaviour
     private void Start()
     {
         _maxBannerCount = _maxBannerCount > _notActiveBanners.Count ? _notActiveBanners.Count : _maxBannerCount;
+    }
 
-        InvokeRepeating(nameof(OpenRandomBanner), 0, _delay);
+    private void Update()
+    {
+        if (Time.time >= _lastSpawnTime + _delay) 
+            OpenRandomBanner();
     }
 
     private void OpenRandomBanner() 
@@ -36,7 +42,7 @@ public class BannerManager : MonoBehaviour
 
         if (_activeBanners.Count >= _maxBannerCount) 
         {
-            banner = _activeBanners.Dequeue();
+            banner = _activeBanners[0];
             banner.Close();
         }
 
@@ -44,11 +50,23 @@ public class BannerManager : MonoBehaviour
         banner.Open();
 
         _notActiveBanners.Remove(banner);
-        _activeBanners.Enqueue(banner);
+        _activeBanners.Add(banner);
+        _lastSpawnTime = Time.time;
     }
 
     public void ReturnBanner(Banner banner) 
     {
         _notActiveBanners.Add(banner);
+        _activeBanners.Remove(banner);
+    }
+
+    public void CloseAll() 
+    {
+        List<Banner> temp = new(_activeBanners);
+
+        foreach (Banner banner in temp)
+        {
+            banner.Close();
+        }
     }
 }

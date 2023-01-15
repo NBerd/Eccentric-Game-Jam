@@ -3,6 +3,7 @@ using UnityEngine;
 public class ScrollWindow : Window
 {
     [SerializeField] private float _travelTime;
+    [SerializeField] private WritterWindow _writter;
 
     private Vector2 _startPosition;
     private Vector2 _targetPosition;
@@ -40,7 +41,11 @@ public class ScrollWindow : Window
 
         transform.position = Vector2.Lerp(_startPosition, _targetPosition, _timer / _travelTime);
 
-        if (transform.position.y == _targetPosition.y)
+        if (transform.position.y == _targetPosition.y) 
+        {
             CloseWindow();
+
+            _writter.SetDescriptionToLose();
+        }
     }
 }

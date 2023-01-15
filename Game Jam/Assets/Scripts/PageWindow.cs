@@ -25,11 +25,11 @@ public class PageWindow : Window
         float deltaX = _transform.rect.width * _screenInfo.Scale / 2;
         float deltaY = _transform.rect.height * _screenInfo.Scale / 2;
 
-        float minX = _screenInfo.PageBounds.min.x + deltaX;
-        float maxX = _screenInfo.PageBounds.max.x - deltaX;
+        float minX = _screenInfo.ScreenBounds.min.x + deltaX;
+        float maxX = _screenInfo.ScreenBounds.max.x - deltaX;
 
-        float minY = _screenInfo.PageBounds.min.x + deltaY;
-        float maxY = _screenInfo.PageBounds.max.y - deltaY;
+        float minY = _screenInfo.ScreenBounds.min.x + deltaY;
+        float maxY = _screenInfo.ScreenBounds.max.y - deltaY;
 
         float positionX = Random.Range(minX, maxX);
         float positionY = Random.Range(minY, maxY);

@@ -7,8 +7,10 @@ public class WritterWindow : MonoBehaviour
     [SerializeField] private Library _library;
     [SerializeField] private TextMeshProUGUI _text;
     [SerializeField] private string _succesColor;
-    [SerializeField] private Window _window;
+    [SerializeField] private ScrollWindow _window;
     [SerializeField] private Sound _compliteSound;
+
+    public string CurrentWord { get; private set; }
 
     private static List<string> CurrentWords;
 
@@ -83,5 +85,12 @@ public class WritterWindow : MonoBehaviour
 
             PlayerInput.OnType -= Write;
         }
+    }
+
+    public void SetDescriptionToLose() 
+    {
+        string description = new($"<color=#DD3554>{_currentWord}</color> NOT FOUND");
+
+        GameManager.Instance.Defeat(description);
     }
 }

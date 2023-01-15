@@ -19,7 +19,7 @@ public class CallAnimation : MonoBehaviour
 
     private void Update()
     {
-        _timer += Time.deltaTime;
+        _timer += Time.unscaledDeltaTime;
         float curveValue = _animationCurve.Evaluate(_timer / _animationDuration);
 
         _image.color = Color.Lerp(_startColor, _endColor, curveValue);
